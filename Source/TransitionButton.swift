@@ -51,6 +51,8 @@ open class TransitionButton : UIButton, UIViewControllerTransitioningDelegate, C
         }
     }
     
+    open var isAnimating: Bool = false
+    
     private lazy var spiner: SpinerLayer = {
         let spiner = SpinerLayer(frame: self.frame)
         self.layer.addSublayer(spiner)
@@ -84,6 +86,7 @@ open class TransitionButton : UIButton, UIViewControllerTransitioningDelegate, C
      start animating the button, before starting a task, exemple: before a network call.
      */
     open func startAnimation() {
+        self.isAnimating = true
         self.isUserInteractionEnabled = false // Disable the user interaction during the animation
         self.cachedTitle            = title(for: .normal)  // cache title before animation of spiner
         self.cachedImage            = image(for: .normal)  // cache image before animation of spiner
@@ -115,6 +118,7 @@ open class TransitionButton : UIButton, UIViewControllerTransitioningDelegate, C
             // We return to original state after a delay to give opportunity to custom transition
             DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
                 self.setOriginalState()
+                self.isAnimating = false
             }
         case .shake:
             completion?()
@@ -122,10 +126,12 @@ open class TransitionButton : UIButton, UIViewControllerTransitioningDelegate, C
             DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
                 self.setOriginalState()
                 self.shakeAnimation()
+                self.isAnimating = false
             }
         case .expand:
             self.spiner.stopAnimation() // before animate the expand animation we need to hide the spiner first
             self.expand(completion: completion, revertDelay:delay) // scale the round button to fill the screen
+            self.isAnimating = false
         }
     }
     
